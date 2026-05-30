@@ -2,7 +2,7 @@
 
 Aplicativo Flutter de saúde animal para tutores de pets. Registra vacinas, consultas veterinárias, receitas médicas, restrições/alergias, procedimentos e notícias de saúde — tudo organizado por pet.
 
-O design foi criado no Claude Design (claude.ai/design) e exportado como protótipo HTML/React, depois implementado como app Flutter nativo.
+O design foi criado no Figma, aprimorado no Claude Design (claude.ai/design) para mais telas e exportado como protótipo HTML/React, depois implementado como app Flutter nativo.
 
 ---
 
