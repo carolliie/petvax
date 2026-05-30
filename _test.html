@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PetVax — teste</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Mulish:wght@600;700;800;900&display=swap" rel="stylesheet"/>
+<style>body{margin:0;background:#d8c6e6;}#root{display:flex;flex-wrap:wrap;gap:24px;padding:24px;}</style>
+</head>
+<body>
+<div id="root" class="pv"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- petvax-ui.jsx — shared UI kit: tokens, icons, logo, illustration, status bar, nav, primitives -->
+<script type="text/babel">
+/* ---------- Tokens + base styles (injected once) ---------- */
+const PV_CSS = `
+:root{
+  --deep:#543075; --deep-2:#3d2259; --deep-3:#6b4690;
+  --lilac:#c8a0e1; --soft:#cfabe2; --soft-2:#e1c9ef; --chip:#efe0f6;
+  --bg:#fee9f9; --bg-2:#fdf3fb; --card:#ffffff;
+  --ink:#3a2350; --muted:#94789f; --faint:#b9a6c6; --line:#ecd9f1;
+  --green:#4fa980; --green-bg:#e2f2ea; --amber:#cf953c; --amber-bg:#f8edda;
+  --red:#c95d6e; --red-bg:#f8e3e7;
+  --serif:'Fraunces',Georgia,serif; --sans:'Mulish',system-ui,sans-serif;
+}
+.pv, .pv *{ box-sizing:border-box; margin:0; padding:0; -webkit-font-smoothing:antialiased; }
+.pv{ font-family:var(--sans); color:var(--ink); }
+.pv-screen{
+  width:390px; height:844px; background:var(--bg); position:relative;
+  overflow:hidden; display:flex; flex-direction:column; font-family:var(--sans);
+  color:var(--ink); border-radius:0;
+}
+.pv-screen.lilac{ background:var(--lilac); }
+
+/* status bar */
+.pv-sb{ height:50px; flex:0 0 50px; display:flex; align-items:flex-end; justify-content:space-between;
+  padding:0 26px 8px; font-weight:800; font-size:15px; letter-spacing:.2px; }
+.pv-sb .r{ display:flex; align-items:center; gap:6px; }
+.pv-sb svg{ display:block; }
+
+/* generic */
+.pv-content{ flex:1 1 auto; min-height:0; padding:8px 22px 18px; overflow:hidden; display:flex; flex-direction:column; }
+.pv-h1{ font-family:var(--serif); font-weight:900; font-optical-sizing:auto; line-height:1.04;
+  letter-spacing:-.01em; color:var(--deep); font-size:32px; }
+.pv-h2{ font-family:var(--serif); font-weight:800; color:var(--deep); font-size:23px; letter-spacing:-.01em; }
+.pv-h3{ font-family:var(--serif); font-weight:800; color:var(--deep); font-size:18px; }
+.pv-eyebrow{ font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.pv-meta{ font-size:13px; color:var(--muted); font-weight:600; }
+.pv-card{ background:var(--card); border-radius:20px; box-shadow:0 8px 22px -14px rgba(84,48,117,.45); }
+.pv-divider{ height:1px; background:var(--line); border:0; }
+
+/* pill / tag */
+.pv-pill{ display:inline-flex; align-items:center; gap:6px; border-radius:999px; font-weight:800;
+  font-size:12px; padding:6px 12px; }
+.pv-pill.deep{ background:var(--deep); color:#fff; }
+.pv-pill.soft{ background:var(--chip); color:var(--deep); }
+.pv-tag{ display:inline-flex; align-items:center; gap:5px; border-radius:999px; font-weight:800;
+  font-size:11px; padding:4px 10px; }
+.pv-tag.green{ background:var(--green-bg); color:#2f7d5b; }
+.pv-tag.amber{ background:var(--amber-bg); color:#9c6a1c; }
+.pv-tag.red{ background:var(--red-bg); color:#a8404f; }
+.pv-tag.soft{ background:var(--chip); color:var(--deep); }
+
+/* buttons */
+.pv-btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0;
+  font-family:var(--sans); font-weight:800; font-size:15px; border-radius:16px; cursor:pointer; }
+.pv-btn.primary{ background:var(--deep); color:#fff; padding:15px 20px; }
+.pv-btn.ghost{ background:var(--chip); color:var(--deep); padding:15px 20px; }
+.pv-btn.block{ width:100%; }
+
+/* inputs */
+.pv-field{ display:flex; flex-direction:column; gap:7px; }
+.pv-label{ font-size:12.5px; font-weight:800; color:var(--deep); letter-spacing:.01em; }
+.pv-input{ background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:13px 14px;
+  font-family:var(--sans); font-size:14px; font-weight:600; color:var(--ink); }
+.pv-input.ph{ color:var(--faint); }
+.pv-input.row{ display:flex; align-items:center; justify-content:space-between; }
+
+/* chips group */
+.pv-chips{ display:flex; gap:8px; flex-wrap:wrap; }
+.pv-chip{ border:1.5px solid var(--line); background:#fff; color:var(--muted); border-radius:12px;
+  padding:9px 14px; font-weight:800; font-size:13px; display:inline-flex; align-items:center; gap:6px; }
+.pv-chip.on{ background:var(--deep); border-color:var(--deep); color:#fff; }
+
+/* bottom nav */
+.pv-nav{ flex:0 0 auto; height:80px; background:var(--deep); display:flex; align-items:center;
+  justify-content:space-around; padding:0 30px 14px; position:relative; }
+.pv-nav .it{ color:#c9aee0; display:flex; align-items:center; justify-content:center; }
+.pv-nav .it.on{ color:#fff; }
+.pv-nav .fab{ width:62px; height:62px; border-radius:20px; background:#fff; color:var(--deep);
+  display:flex; align-items:center; justify-content:center; margin-top:-26px;
+  box-shadow:0 10px 20px -8px rgba(0,0,0,.4); }
+
+/* avatar */
+.pv-ava{ border-radius:50%; background:var(--soft-2); display:flex; align-items:center; justify-content:center;
+  color:var(--deep); font-weight:900; overflow:hidden; flex:0 0 auto; }
+
+/* list row */
+.pv-row{ display:flex; align-items:center; gap:13px; }
+
+/* placeholder hatch */
+.pv-hatch{ background:
+  repeating-linear-gradient(45deg, rgba(84,48,117,.10) 0 7px, transparent 7px 14px), var(--soft-2); }
+`;
+
+function PVStyle(){
+  React.useEffect(()=>{
+    if(!document.getElementById('pv-css')){
+      const s=document.createElement('style'); s.id='pv-css'; s.textContent=PV_CSS;
+      document.head.appendChild(s);
+    }
+  },[]);
+  return null;
+}
+
+/* ---------- Icons (Lucide-ish line set) ---------- */
+const PV_PATHS = {
+  arrowRight:'M5 12h14 M13 6l6 6-6 6',
+  chevronRight:'M9 6l6 6-6 6',
+  chevronDown:'M6 9l6 6 6-6',
+  back:'M15 6l-6 6 6 6',
+  plus:'M12 5v14 M5 12h14',
+  user:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  calendar:'M8 2v4 M16 2v4 M3.5 9h17 M5 5h14a1.5 1.5 0 0 1 1.5 1.5V19A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V6.5A1.5 1.5 0 0 1 5 5z',
+  clock:'M12 7v5l3 2 M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z',
+  bell:'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9 M13.5 21a1.7 1.7 0 0 1-3 0',
+  pin:'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  file:'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z M14 3v5h5 M9 13h6 M9 17h6',
+  pill:'M10.5 13.5l3-3 M8.5 19.5a4.95 4.95 0 0 1-7-7l5-5a4.95 4.95 0 0 1 7 7l-5 5z',
+  alert:'M12 9v4 M12 17h.01 M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+  check:'M20 6 9 17l-5-5',
+  search:'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z M21 21l-4.3-4.3',
+  camera:'M14.5 4l1.5 2.5h3A1.5 1.5 0 0 1 20.5 8v10A1.5 1.5 0 0 1 19 19.5H5A1.5 1.5 0 0 1 3.5 18V8A1.5 1.5 0 0 1 5 6.5h3L9.5 4z M12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  shield:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 11.5l2 2 4-4',
+  edit:'M4 20h4l10.5-10.5a2 2 0 0 0-2.83-2.83L5 17v3z M13.5 6.5l4 4',
+  settings:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.9-1.2V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1.6z',
+  heart:'M12 20s-7-4.6-9.2-9A4.8 4.8 0 0 1 12 6a4.8 4.8 0 0 1 9.2 5c-2.2 4.4-9.2 9-9.2 9z',
+  weight:'M5 8h14l1.5 11A1.5 1.5 0 0 1 19 21H5a1.5 1.5 0 0 1-1.5-2L5 8z M9 8a3 3 0 1 1 6 0',
+  dots:'M5 12h.01 M12 12h.01 M19 12h.01',
+  send:'M22 2 11 13 M22 2l-7 20-4-9-9-4 20-7z',
+  clipboard:'M9 4h6a1 1 0 0 1 1 1v1h1.5A1.5 1.5 0 0 1 19 7.5V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20V7.5A1.5 1.5 0 0 1 6.5 6H8V5a1 1 0 0 1 1-1z M9 4v2h6V4',
+  logout:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9',
+  phone:'M16.5 21A14 14 0 0 1 3 7.5 2 2 0 0 1 5 5.5h2.5a1.5 1.5 0 0 1 1.5 1.2l.7 3a1.5 1.5 0 0 1-.5 1.5l-1.3 1a11 11 0 0 0 4.7 4.7l1-1.3a1.5 1.5 0 0 1 1.5-.5l3 .7a1.5 1.5 0 0 1 1.2 1.5V19a2 2 0 0 1-2.3 2z',
+  download:'M12 3v12 M7 10l5 5 5-5 M5 21h14',
+};
+
+function Icon({name, size=22, sw=2, color, style, ...rest}){
+  const d = PV_PATHS[name];
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color||'currentColor'} strokeWidth={sw} strokeLinecap="round"
+      strokeLinejoin="round" style={{display:'block', flex:'0 0 auto', ...style}} {...rest}>
+      {d.split(' M').map((seg,i)=>(<path key={i} d={(i?'M':'')+seg} />))}
+    </svg>
+  );
+}
+
+/* Paw — filled beans */
+function Paw({size=22, color='currentColor', style}){
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill={color} style={{display:'block',...style}}>
+      <ellipse cx="16" cy="21" rx="7.2" ry="6"/>
+      <ellipse cx="7.5" cy="14.5" rx="3.1" ry="3.7"/>
+      <ellipse cx="24.5" cy="14.5" rx="3.1" ry="3.7"/>
+      <ellipse cx="12" cy="9" rx="2.7" ry="3.4"/>
+      <ellipse cx="20" cy="9" rx="2.7" ry="3.4"/>
+    </svg>
+  );
+}
+
+/* Syringe (simple) */
+function Syringe({size=22, color='currentColor', sw=2, style}){
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+      strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={{display:'block',...style}}>
+      <path d="M18 2l4 4"/><path d="M14.5 4.5l5 5"/>
+      <path d="M17 7 7 17l-3 .5L3.5 21 3 20.5l.5-3.5L4 14 14 4"/>
+      <path d="M9.5 9.5l2 2 M7 12l2 2 M12 7l2 2"/>
+    </svg>
+  );
+}
+
+/* Stethoscope (simple) */
+function Stetho({size=22, color='currentColor', sw=2, style}){
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+      strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={{display:'block',...style}}>
+      <path d="M4 3v6a5 5 0 0 0 10 0V3"/><path d="M4 3H3 M14 3h1"/>
+      <path d="M9 14v2a5 5 0 0 0 5 5 5 5 0 0 0 5-5v-3"/>
+      <circle cx="19" cy="10" r="2.2"/>
+    </svg>
+  );
+}
+
+/* ---------- Logo: rounded cross + paw ---------- */
+function CrossPaw({size=120, cross='var(--deep)', paw='#fff'}){
+  return (
+    <div style={{position:'relative', width:size, height:size, flex:'0 0 auto'}}>
+      <svg width={size} height={size} viewBox="0 0 100 100" style={{display:'block'}}>
+        <rect x="33" y="5" width="34" height="90" rx="11" fill={cross}/>
+        <rect x="5" y="33" width="90" height="34" rx="11" fill={cross}/>
+      </svg>
+      <div style={{position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center'}}>
+        <Paw size={size*0.4} color={paw}/>
+      </div>
+    </div>
+  );
+}
+
+/* Wordmark */
+function Wordmark({size=30, color='var(--deep)'}){
+  return (
+    <span style={{fontFamily:'var(--serif)', fontWeight:900, fontSize:size, color, letterSpacing:'-.01em'}}>
+      Pet<span style={{color:'var(--deep)'}}>Vax</span>
+    </span>
+  );
+}
+
+/* ---------- Pet duo line illustration (dog + cat faces) ---------- */
+function PetDuo({width=300, stroke='#fff', sw=5, bg='var(--lilac)', style}){
+  const F={fill:bg, stroke, strokeWidth:sw, strokeLinecap:'round', strokeLinejoin:'round'};
+  const W={fill:stroke, stroke:'none'};
+  return (
+    <svg width={width} viewBox="0 0 300 220" fill="none" style={{display:'block', ...style}}>
+      {/* Dog — back, upper-right */}
+      <g {...F}>
+        <ellipse cx="132" cy="116" rx="17" ry="42" transform="rotate(-20 132 116)"/>
+        <ellipse cx="242" cy="116" rx="17" ry="42" transform="rotate(20 242 116)"/>
+        <ellipse cx="187" cy="118" rx="64" ry="60"/>
+      </g>
+      <g {...W}><circle cx="165" cy="106" r="5.5"/><circle cx="209" cy="106" r="5.5"/><ellipse cx="187" cy="138" rx="9" ry="6.5"/></g>
+      <g fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M187 144 C187 157 176 161 168 156"/><path d="M187 144 C187 157 198 161 206 156"/>
+      </g>
+      {/* Cat — front, lower-left */}
+      <g {...F}>
+        <path d="M62 132 L73 90 L103 124 Z"/>
+        <path d="M134 132 L123 90 L93 124 Z"/>
+        <ellipse cx="98" cy="160" rx="50" ry="46"/>
+      </g>
+      <g fill="none" stroke={stroke} strokeWidth={sw-1.2} strokeLinecap="round">
+        <path d="M52 156 L18 150"/><path d="M52 166 L18 168"/>
+        <path d="M144 156 L178 150"/><path d="M144 166 L178 168"/>
+      </g>
+      <g {...W}><circle cx="80" cy="152" r="4.8"/><circle cx="116" cy="152" r="4.8"/></g>
+      <g fill="none" stroke={stroke} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M92 166 L98 172 L104 166"/>
+        <path d="M98 172 C98 180 92 182 87 179"/><path d="M98 172 C98 180 104 182 109 179"/>
+      </g>
+    </svg>
+  );
+}
+
+/* ---------- Composed shells ---------- */
+function StatusBar({dark=false}){
+  const c = dark ? '#fff' : 'var(--deep)';
+  return (
+    <div className="pv-sb" style={{color:c}}>
+      <span>9:41</span>
+      <div className="r">
+        {/* signal */}
+        <svg width="18" height="12" viewBox="0 0 18 12" fill={c}><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4.5" width="3" height="7.5" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></svg>
+        {/* wifi */}
+        <svg width="16" height="12" viewBox="0 0 16 12" fill={c}><path d="M8 11.2 1.2 4.4a9.6 9.6 0 0 1 13.6 0L8 11.2z" opacity=".95"/></svg>
+        {/* battery */}
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="1" y="1" width="21" height="11" rx="3" stroke={c} strokeWidth="1.3" opacity=".5"/><rect x="3" y="3" width="15" height="7" rx="1.5" fill={c}/><rect x="23.5" y="4.5" width="2" height="4" rx="1" fill={c} opacity=".5"/></svg>
+      </div>
+    </div>
+  );
+}
+
+function HomeIndicator({dark=false}){
+  return (<div style={{height:0}}><div style={{position:'absolute',bottom:8,left:'50%',transform:'translateX(-50%)',width:128,height:5,borderRadius:3,background:dark?'rgba(255,255,255,.6)':'rgba(84,48,117,.55)'}}/></div>);
+}
+
+/* Bottom nav: role 'tutor' | 'vet', active = id */
+function BottomNav({role='tutor', active='home'}){
+  const items = role==='tutor'
+    ? [{id:'vac', el:<Syringe size={24}/>}, {id:'home', fab:true}, {id:'me', el:<Icon name="user" size={24}/>}]
+    : [{id:'agenda', el:<Icon name="calendar" size={24}/>}, {id:'add', fab:true}, {id:'me', el:<Icon name="user" size={24}/>}];
+  return (
+    <div className="pv-nav">
+      {items.map(it=> it.fab
+        ? <div key={it.id} className="fab"><Paw size={30} color="var(--deep)"/></div>
+        : <div key={it.id} className={'it'+(active===it.id?' on':'')}>{it.el}</div>
+      )}
+    </div>
+  );
+}
+
+/* Back header for pushed screens */
+function PushHeader({title, onLight=true, right}){
+  return (
+    <div style={{display:'flex', alignItems:'center', gap:12, padding:'2px 0 14px'}}>
+      <div style={{width:42, height:42, borderRadius:13, background:'#fff', border:'1.5px solid var(--line)',
+        display:'flex', alignItems:'center', justifyContent:'center', color:'var(--deep)'}}>
+        <Icon name="back" size={22}/>
+      </div>
+      <div className="pv-h3" style={{flex:1}}>{title}</div>
+      {right}
+    </div>
+  );
+}
+
+/* Avatar with initial */
+function Avatar({label, size=44, src, emoji}){
+  return (
+    <div className="pv-ava" style={{width:size, height:size, fontSize:size*0.4}}>
+      {emoji ? <span style={{fontSize:size*0.5}}>{emoji}</span> : (label? label[0] : '')}
+    </div>
+  );
+}
+</script>
+
+<!-- screens-tutor.jsx — Tutor screens -->
+<script type="text/babel">
+/* ===== Onboarding ===== */
+function ScrOnboarding(){
+  return (
+    <div className="pv-screen lilac">
+      <StatusBar/>
+      <div className="pv-content" style={{padding:'10px 26px 0'}}>
+        <div style={{marginTop:18}}>
+          <div className="pv-h1" style={{fontSize:30, color:'var(--deep)'}}>Use a&nbsp;
+            <Wordmark size={36}/>
+          </div>
+          <div style={{display:'flex', alignItems:'center', gap:14, marginTop:10}}>
+            <CrossPaw size={96}/>
+            <div className="pv-h1" style={{fontSize:30, color:'var(--deep)'}}>para ter as vacinas de seu pet em mãos.</div>
+          </div>
+        </div>
+        <div style={{flex:1, position:'relative'}}>
+          <PetDuo width={300} sw={6} style={{position:'absolute', left:'50%', bottom:8, transform:'translateX(-50%)'}}/>
+          <div style={{position:'absolute', right:0, bottom:22, width:60, height:60, borderRadius:18,
+            background:'var(--deep)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center',
+            boxShadow:'0 12px 22px -10px rgba(84,48,117,.7)'}}>
+            <Icon name="arrowRight" size={26}/>
+          </div>
+        </div>
+      </div>
+      <BottomNav role="tutor" active="home"/>
+    </div>
+  );
+}
+
+/* ===== Home ===== */
+function MenuCard({label, children}){
+  return (
+    <div style={{flex:1, background:'var(--soft)', borderRadius:20, padding:'16px', height:158,
+      position:'relative', overflow:'hidden', boxShadow:'0 10px 22px -16px rgba(84,48,117,.6)'}}>
+      <div style={{position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', opacity:.95}}>
+        {children}
+      </div>
+      <div style={{position:'absolute', right:12, top:14, bottom:14, writingMode:'vertical-rl', transform:'rotate(180deg)',
+        fontFamily:'var(--serif)', fontWeight:800, fontSize:21, color:'var(--deep)'}}>{label}</div>
+    </div>
+  );
+}
+
+function PetBot(){
+  return (
+    <div style={{position:'absolute', right:16, bottom:14, width:236, background:'#fff', borderRadius:18,
+      padding:'13px 14px', boxShadow:'0 16px 30px -12px rgba(84,48,117,.5)', border:'1px solid var(--line)'}}>
+      <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6}}>
+        <span style={{fontFamily:'var(--serif)', fontWeight:800, color:'var(--deep)', fontSize:15}}>Olá! Sou o PetBot!</span>
+        <Icon name="back" size={16} style={{transform:'rotate(45deg)'}} color="var(--muted)"/>
+      </div>
+      <div style={{fontSize:12.5, lineHeight:1.45, color:'var(--ink)', fontWeight:600}}>
+        Comunico que a vacina Antirrábica de <b style={{color:'var(--deep)'}}>Mingau</b> vence dia <b style={{color:'var(--deep)'}}>22/12/2025</b>.
+      </div>
+      <div style={{display:'flex', alignItems:'center', gap:8, marginTop:8}}>
+        <div style={{fontSize:12.5, fontWeight:800, color:'var(--ink)', flex:1}}>Vacine seu gatinho!</div>
+        <div style={{position:'relative'}}>
+          <div className="pv-ava" style={{width:34, height:34, background:'var(--soft)'}}><Paw size={18} color="var(--deep)"/></div>
+          <div style={{position:'absolute', right:-3, bottom:-3, width:16, height:16, borderRadius:9, background:'var(--green)',
+            display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #fff'}}>
+            <Icon name="check" size={9} color="#fff" sw={3.5}/>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScrHome(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{gap:16}}>
+        <div className="pv-h1" style={{fontSize:25, marginTop:4}}>Faça o cadastro do seu pet ou acesse a carteirinha de vacinação</div>
+        <div style={{display:'flex', gap:13}}>
+          <MenuCard label="Cadastro"><PetDuo width={128} sw={5} bg="var(--soft)"/></MenuCard>
+          <MenuCard label="Carteirinha"><Stetho size={66} color="#fff" sw={2.4}/></MenuCard>
+        </div>
+        <div>
+          <div className="pv-h2" style={{marginBottom:10}}>Consultas veterinárias</div>
+          <div className="pv-card" style={{padding:'14px 16px', display:'flex', alignItems:'center', gap:12}}>
+            <div style={{flex:1}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+                <div className="pv-h3" style={{fontSize:17}}>Dr. Francisco</div>
+                <Icon name="dots" size={18} color="var(--faint)"/>
+              </div>
+              <div style={{fontFamily:'var(--serif)', fontStyle:'italic', color:'var(--muted)', fontSize:13.5, marginTop:1}}>Veterinário geral</div>
+              <div style={{display:'flex', alignItems:'center', gap:5, marginTop:7, color:'var(--muted)', fontSize:12.5, fontWeight:600}}>
+                <Icon name="pin" size={14} color="var(--deep-3)"/> Av. Frei Vicente, 782
+              </div>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontFamily:'var(--serif)', fontWeight:800, color:'var(--deep)', fontSize:19, marginBottom:8}}>02/09</div>
+              <div className="pv-pill deep" style={{fontSize:13, padding:'8px 14px'}}><Icon name="clock" size={14}/> 14:00h</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="pv-h2" style={{marginBottom:10}}>Notícias</div>
+          <div className="pv-card" style={{padding:'12px', display:'flex', gap:12, alignItems:'center'}}>
+            <div className="pv-hatch" style={{width:60, height:60, borderRadius:14, flex:'0 0 auto'}}/>
+            <div>
+              <div style={{fontWeight:800, fontSize:13.5, color:'var(--ink)', lineHeight:1.3}}>Campanha de vacinação antirrábica gratuita em setembro</div>
+              <div className="pv-meta" style={{marginTop:3, fontSize:12}}>Secretaria de Saúde · há 2 dias</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <PetBot/>
+      <BottomNav role="tutor" active="home"/>
+    </div>
+  );
+}
+
+/* ===== Cadastro do pet ===== */
+function ScrCadastroPet(){
+  return (
+    <div className="pv-screen" style={{background:'var(--bg)'}}>
+      <StatusBar/>
+      <div className="pv-content" style={{paddingTop:6}}>
+        <PushHeader title="Cadastrar pet"/>
+        <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:8, margin:'2px 0 18px'}}>
+          <div style={{position:'relative'}}>
+            <div className="pv-hatch" style={{width:96, height:96, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center'}}>
+              <Paw size={40} color="var(--deep-3)"/>
+            </div>
+            <div style={{position:'absolute', right:-2, bottom:-2, width:34, height:34, borderRadius:11, background:'var(--deep)',
+              display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', border:'3px solid var(--bg)'}}>
+              <Icon name="camera" size={17}/>
+            </div>
+          </div>
+          <div className="pv-meta" style={{fontSize:12}}>Foto do pet</div>
+        </div>
+        <div style={{display:'flex', flexDirection:'column', gap:14}}>
+          <div className="pv-field"><span className="pv-label">Nome</span><div className="pv-input ph">Ex: Mingau</div></div>
+          <div className="pv-field"><span className="pv-label">Espécie</span>
+            <div className="pv-chips">
+              <span className="pv-chip on"><Paw size={14} color="#fff"/> Gato</span>
+              <span className="pv-chip">Cão</span>
+              <span className="pv-chip">Outro</span>
+            </div>
+          </div>
+          <div style={{display:'flex', gap:12}}>
+            <div className="pv-field" style={{flex:1}}><span className="pv-label">Raça</span><div className="pv-input ph">SRD</div></div>
+            <div className="pv-field" style={{flex:1}}><span className="pv-label">Sexo</span><div className="pv-input row">Fêmea <Icon name="chevronDown" size={16} color="var(--faint)"/></div></div>
+          </div>
+          <div style={{display:'flex', gap:12}}>
+            <div className="pv-field" style={{flex:1}}><span className="pv-label">Nascimento</span><div className="pv-input row ph">dd/mm/aaaa <Icon name="calendar" size={16} color="var(--faint)"/></div></div>
+            <div className="pv-field" style={{flex:1}}><span className="pv-label">Peso</span><div className="pv-input ph">kg</div></div>
+          </div>
+          <div className="pv-field"><span className="pv-label">Microchip <span style={{color:'var(--faint)', fontWeight:700}}>(opcional)</span></span><div className="pv-input ph">Número de identificação</div></div>
+        </div>
+        <div style={{flex:1}}/>
+        <button className="pv-btn primary block"><Icon name="check" size={19}/> Salvar pet</button>
+      </div>
+    </div>
+  );
+}
+
+/* ===== Carteirinha de vacinação ===== */
+function VaxRow({nome, data, prox, status}){
+  const tag = status==='Em dia' ? 'green' : status==='Vence em breve' ? 'amber' : 'red';
+  return (
+    <div style={{display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid var(--line)'}}>
+      <div style={{width:38, height:38, borderRadius:12, background:'var(--chip)', display:'flex', alignItems:'center', justifyContent:'center', flex:'0 0 auto'}}>
+        <Syringe size={19} color="var(--deep)"/>
+      </div>
+      <div style={{flex:1, minWidth:0}}>
+        <div style={{fontWeight:800, fontSize:14, color:'var(--ink)'}}>{nome}</div>
+        <div className="pv-meta" style={{fontSize:11.5}}>Aplicada {data} · próxima {prox}</div>
+      </div>
+      <span className={'pv-tag '+tag}>{status}</span>
+    </div>
+  );
+}
+
+function ScrCarteirinha(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{gap:14}}>
+        <div className="pv-h1" style={{fontSize:26, marginTop:2}}>Carteirinha de vacinação</div>
+        {/* pet selector */}
+        <div style={{display:'flex', gap:10}}>
+          {[['Mingau',true],['Theo',false],['+',false]].map(([n,on],i)=>(
+            <div key={i} style={{display:'flex', flexDirection:'column', alignItems:'center', gap:5}}>
+              <div className="pv-ava" style={{width:54, height:54, border: on?'2.5px solid var(--deep)':'2px solid var(--line)',
+                background: n==='+'?'#fff':'var(--soft-2)', color:'var(--deep)'}}>
+                {n==='+'? <Icon name="plus" size={22} color="var(--deep-3)"/> : <Paw size={24} color="var(--deep)"/>}
+              </div>
+              <span style={{fontSize:11.5, fontWeight:800, color: on?'var(--deep)':'var(--muted)'}}>{n==='+'?'':n}</span>
+            </div>
+          ))}
+        </div>
+        {/* booklet card */}
+        <div className="pv-card" style={{overflow:'hidden'}}>
+          <div style={{background:'var(--deep)', color:'#fff', padding:'14px 16px', display:'flex', alignItems:'center', gap:12}}>
+            <div className="pv-ava" style={{width:44, height:44, background:'rgba(255,255,255,.18)', color:'#fff'}}><Paw size={22} color="#fff"/></div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:'var(--serif)', fontWeight:800, fontSize:18}}>Mingau</div>
+              <div style={{fontSize:12, opacity:.85, fontWeight:600}}>Gato · SRD · Fêmea · 3 anos</div>
+            </div>
+            <div style={{textAlign:'right'}}>
+              <Paw size={16} color="rgba(255,255,255,.55)"/>
+              <div style={{fontSize:10, opacity:.7, fontWeight:700, marginTop:2}}>Nº 0421-MG</div>
+            </div>
+          </div>
+          <div style={{padding:'4px 16px 12px'}}>
+            <VaxRow nome="V4 (Quádrupla felina)" data="10/03/25" prox="10/03/26" status="Em dia"/>
+            <VaxRow nome="Antirrábica" data="22/12/24" prox="22/12/25" status="Vence em breve"/>
+            <VaxRow nome="Leucemia felina (FeLV)" data="15/01/25" prox="15/01/26" status="Em dia"/>
+            <VaxRow nome="Giárdia" data="03/08/24" prox="03/08/25" status="Atrasada"/>
+          </div>
+        </div>
+        <div style={{flex:1}}/>
+        <button className="pv-btn ghost block"><Icon name="download" size={18}/> Exportar carteirinha (PDF)</button>
+      </div>
+      <BottomNav role="tutor" active="vac"/>
+    </div>
+  );
+}
+
+/* ===== Consultas — lista ===== */
+function ConsultaCard({nome, esp, data, hora, local, status}){
+  const tag = status==='Confirmada'?'green':status==='Pendente'?'amber':'soft';
+  return (
+    <div className="pv-card" style={{padding:'13px 15px'}}>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+        <div>
+          <div className="pv-h3" style={{fontSize:16}}>{nome}</div>
+          <div style={{fontFamily:'var(--serif)', fontStyle:'italic', color:'var(--muted)', fontSize:13}}>{esp}</div>
+        </div>
+        {status && <span className={'pv-tag '+tag}>{status}</span>}
+      </div>
+      <div style={{display:'flex', alignItems:'center', gap:14, marginTop:9, color:'var(--muted)', fontSize:12.5, fontWeight:700}}>
+        <span style={{display:'flex', alignItems:'center', gap:5}}><Icon name="calendar" size={14} color="var(--deep-3)"/> {data}</span>
+        <span style={{display:'flex', alignItems:'center', gap:5}}><Icon name="clock" size={14} color="var(--deep-3)"/> {hora}</span>
+      </div>
+      {local && <div style={{display:'flex', alignItems:'center', gap:5, marginTop:6, color:'var(--muted)', fontSize:12, fontWeight:600}}>
+        <Icon name="pin" size={13} color="var(--deep-3)"/> {local}</div>}
+    </div>
+  );
+}
+
+function ScrConsultasList(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{gap:14}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div className="pv-h1" style={{fontSize:27}}>Consultas</div>
+          <div style={{width:44, height:44, borderRadius:14, background:'var(--deep)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center'}}><Icon name="plus" size={22}/></div>
+        </div>
+        <div className="pv-chips">
+          <span className="pv-chip on">Próximas</span>
+          <span className="pv-chip">Anteriores</span>
+        </div>
+        <div className="pv-eyebrow">Setembro 2025</div>
+        <ConsultaCard nome="Dr. Francisco" esp="Veterinário geral · Mingau" data="02/09" hora="14:00h" local="Av. Frei Vicente, 782" status="Confirmada"/>
+        <ConsultaCard nome="Dra. Helena Sá" esp="Dermatologia · Theo" data="18/09" hora="09:30h" local="Clínica VidaPet" status="Pendente"/>
+        <div className="pv-eyebrow" style={{marginTop:2}}>Agosto 2025</div>
+        <ConsultaCard nome="Dr. Francisco" esp="Retorno · Mingau" data="12/08" hora="15:00h" status="Realizada"/>
+      </div>
+      <BottomNav role="tutor" active="home"/>
+    </div>
+  );
+}
+
+/* ===== Consulta — detalhe ===== */
+function Info({ic,k,v}){
+  return (<div><div style={{display:'flex', alignItems:'center', gap:5, color:'var(--muted)', fontSize:11, fontWeight:800, textTransform:'uppercase', letterSpacing:'.06em'}}><Icon name={ic} size={13} color="var(--deep-3)"/> {k}</div>
+    <div style={{fontWeight:800, fontSize:14.5, color:'var(--ink)', marginTop:3}}>{v}</div></div>);
+}
+
+function AttachRow({ic,t,s}){
+  return (<div className="pv-card" style={{padding:'12px 14px', display:'flex', alignItems:'center', gap:12}}>
+    <div style={{width:40, height:40, borderRadius:12, background:'var(--chip)', display:'flex', alignItems:'center', justifyContent:'center'}}><Icon name={ic} size={20} color="var(--deep)"/></div>
+    <div style={{flex:1}}><div style={{fontWeight:800, fontSize:14, color:'var(--ink)'}}>{t}</div><div className="pv-meta" style={{fontSize:11.5}}>{s}</div></div>
+    <Icon name="chevronRight" size={18} color="var(--faint)"/>
+  </div>);
+}
+
+function ScrConsultaDetalhe(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{paddingTop:6}}>
+        <PushHeader title="Consulta"/>
+        <div className="pv-card" style={{padding:'16px', marginBottom:14}}>
+          <div style={{display:'flex', gap:13, alignItems:'center'}}>
+            <div className="pv-ava" style={{width:52, height:52, background:'var(--soft-2)'}}><Icon name="user" size={26} color="var(--deep)"/></div>
+            <div style={{flex:1}}>
+              <div className="pv-h3" style={{fontSize:17}}>Dr. Francisco</div>
+              <div style={{fontFamily:'var(--serif)', fontStyle:'italic', color:'var(--muted)', fontSize:13}}>Veterinário geral · CRMV-SP 28.114</div>
+            </div>
+            <span className="pv-tag green"><Icon name="check" size={11} sw={3}/> Confirmada</span>
+          </div>
+          <hr className="pv-divider" style={{margin:'14px 0'}}/>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px 10px'}}>
+            <Info ic="calendar" k="Data" v="02/09/2025"/>
+            <Info ic="clock" k="Horário" v="14:00h"/>
+            <Info ic="heart" k="Paciente" v="Mingau"/>
+            <Info ic="pin" k="Local" v="Av. Frei Vicente, 782"/>
+          </div>
+        </div>
+        <div className="pv-eyebrow" style={{marginBottom:8}}>Motivo</div>
+        <div className="pv-card" style={{padding:'12px 14px', marginBottom:14, fontSize:13.5, fontWeight:600, color:'var(--ink)', lineHeight:1.45}}>
+          Avaliação de rotina e renovação da vacina antirrábica.
+        </div>
+        <div className="pv-eyebrow" style={{marginBottom:8}}>Anexos</div>
+        <div style={{display:'flex', flexDirection:'column', gap:10}}>
+          <AttachRow ic="pill" t="Receita médica" s="2 medicamentos · 02/09"/>
+          <AttachRow ic="file" t="Relatório de consulta" s="PDF · 02/09"/>
+        </div>
+        <div style={{flex:1}}/>
+        <div style={{display:'flex', gap:10}}>
+          <button className="pv-btn ghost block"><Icon name="edit" size={17}/> Remarcar</button>
+          <button className="pv-btn primary block"><Icon name="pin" size={17}/> Ver rota</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== Agendar consulta ===== */
+function ScrAgendar(){
+  const days=[['SEG','01'],['TER','02'],['QUA','03'],['QUI','04'],['SEX','05'],['SÁB','06']];
+  const times=['08:00','09:30','11:00','14:00','15:30','17:00'];
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{paddingTop:6}}>
+        <PushHeader title="Agendar consulta"/>
+        <div style={{display:'flex', flexDirection:'column', gap:16}}>
+          <div className="pv-field"><span className="pv-label">Para qual pet?</span>
+            <div className="pv-chips">
+              <span className="pv-chip on"><Paw size={14} color="#fff"/> Mingau</span>
+              <span className="pv-chip"><Paw size={14} color="var(--deep-3)"/> Theo</span>
+            </div>
+          </div>
+          <div className="pv-field"><span className="pv-label">Veterinário</span>
+            <div className="pv-input row">Dr. Francisco — Geral <Icon name="chevronDown" size={16} color="var(--faint)"/></div>
+          </div>
+          <div className="pv-field"><span className="pv-label">Data — Setembro 2025</span>
+            <div style={{display:'flex', gap:7}}>
+              {days.map(([d,n],i)=>(
+                <div key={i} style={{flex:1, textAlign:'center', padding:'9px 0', borderRadius:13,
+                  background: i===1?'var(--deep)':'#fff', color: i===1?'#fff':'var(--muted)', border:'1.5px solid '+(i===1?'var(--deep)':'var(--line)')}}>
+                  <div style={{fontSize:10, fontWeight:800, opacity:.8}}>{d}</div>
+                  <div style={{fontWeight:800, fontSize:15, marginTop:2}}>{n}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pv-field"><span className="pv-label">Horário</span>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8}}>
+              {times.map((t,i)=>(
+                <div key={i} className={'pv-chip'+(t==='14:00'?' on':'')} style={{justifyContent:'center', opacity: t==='09:30'?.4:1}}>{t}</div>
+              ))}
+            </div>
+          </div>
+          <div className="pv-field"><span className="pv-label">Motivo</span><div className="pv-input ph">Descreva o motivo da consulta…</div></div>
+        </div>
+        <div style={{flex:1}}/>
+        <button className="pv-btn primary block"><Icon name="calendar" size={18}/> Confirmar agendamento</button>
+      </div>
+    </div>
+  );
+}
+
+/* ===== Receitas médicas ===== */
+function RecipeCard({titulo, vet, data, validade, itens}){
+  return (
+    <div className="pv-card" style={{padding:'14px 15px'}}>
+      <div style={{display:'flex', alignItems:'center', gap:11}}>
+        <div style={{width:40, height:40, borderRadius:12, background:'var(--chip)', display:'flex', alignItems:'center', justifyContent:'center', flex:'0 0 auto'}}><Icon name="pill" size={20} color="var(--deep)"/></div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:800, fontSize:14.5, color:'var(--ink)'}}>{titulo}</div>
+          <div className="pv-meta" style={{fontSize:12}}>{vet} · {data}</div>
+        </div>
+        <Icon name="chevronRight" size={18} color="var(--faint)"/>
+      </div>
+      <div style={{display:'flex', flexWrap:'wrap', gap:6, marginTop:11}}>
+        {itens.map((m,i)=>(<span key={i} className="pv-tag soft">{m}</span>))}
+      </div>
+      <div style={{marginTop:9, fontSize:11.5, fontWeight:700, color: validade==='vencida'?'var(--red)':'var(--muted)', display:'flex', alignItems:'center', gap:5}}>
+        <Icon name="clock" size={12}/> {validade==='vencida'?'Validade expirada':'Válida até '+validade}
+      </div>
+    </div>
+  );
+}
+
+function ScrReceitas(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{gap:14}}>
+        <div className="pv-h1" style={{fontSize:27}}>Receitas médicas</div>
+        <div style={{display:'flex', gap:10, alignItems:'center'}}>
+          <div className="pv-input row" style={{flex:1, color:'var(--faint)'}}><span>Buscar receita…</span><Icon name="search" size={16} color="var(--faint)"/></div>
+        </div>
+        <RecipeCard titulo="Tratamento dermatológico" vet="Dra. Helena Sá" data="18/08/25" validade="18/11/25" itens={['Apoquel 5,4mg','Ômega 3','Shampoo']}/>
+        <RecipeCard titulo="Antiparasitário" vet="Dr. Francisco" data="02/06/25" validade="vencida" itens={['Bravecto','Vermífugo']}/>
+        <RecipeCard titulo="Pós-operatório" vet="Dr. Francisco" data="10/03/25" validade="vencida" itens={['Meloxicam','Amoxicilina']}/>
+      </div>
+      <BottomNav role="tutor" active="home"/>
+    </div>
+  );
+}
+
+/* ===== Restrições / alergias ===== */
+function RestrRow({nome, tipo, sev, nota}){
+  const tag = sev==='Grave'?'red':sev==='Moderada'?'amber':'soft';
+  return (
+    <div className="pv-card" style={{padding:'13px 15px'}}>
+      <div style={{display:'flex', alignItems:'center', gap:11}}>
+        <div style={{width:38, height:38, borderRadius:11, background:'var(--red-bg)', display:'flex', alignItems:'center', justifyContent:'center', flex:'0 0 auto'}}><Icon name="alert" size={19} color="var(--red)"/></div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:800, fontSize:14, color:'var(--ink)'}}>{nome}</div>
+          <div className="pv-meta" style={{fontSize:11.5}}>{tipo}</div>
+        </div>
+        <span className={'pv-tag '+tag}>{sev}</span>
+      </div>
+      {nota && <div style={{marginTop:9, fontSize:12.5, color:'var(--muted)', fontWeight:600, lineHeight:1.4}}>{nota}</div>}
+    </div>
+  );
+}
+
+function ScrRestricoes(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{gap:14}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div className="pv-h1" style={{fontSize:25}}>Restrições e alergias</div>
+          <div style={{width:44, height:44, borderRadius:14, background:'var(--deep)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center'}}><Icon name="plus" size={22}/></div>
+        </div>
+        <div className="pv-card" style={{padding:'12px 14px', display:'flex', alignItems:'center', gap:11, background:'var(--chip)', boxShadow:'none'}}>
+          <Paw size={26} color="var(--deep)"/>
+          <div style={{fontWeight:800, fontSize:13.5, color:'var(--deep)'}}>Mingau · Gato SRD</div>
+        </div>
+        <RestrRow nome="Penicilina / Amoxicilina" tipo="Alergia medicamentosa" sev="Grave" nota="Reação cutânea severa registrada em 03/2024. Evitar betalactâmicos."/>
+        <RestrRow nome="Frango" tipo="Alergia alimentar" sev="Moderada" nota="Prurido e otite. Dieta hipoalergênica recomendada."/>
+        <RestrRow nome="Sopro cardíaco grau II" tipo="Condição clínica" sev="Leve" nota="Monitorar antes de procedimentos com anestesia."/>
+      </div>
+      <BottomNav role="tutor" active="home"/>
+    </div>
+  );
+}
+
+/* ===== Perfil do tutor ===== */
+function SettingRow({ic, t, v, danger}){
+  return (
+    <div style={{display:'flex', alignItems:'center', gap:13, padding:'14px 0', borderBottom:'1px solid var(--line)'}}>
+      <div style={{width:38, height:38, borderRadius:11, background: danger?'var(--red-bg)':'var(--chip)', display:'flex', alignItems:'center', justifyContent:'center'}}>
+        <Icon name={ic} size={18} color={danger?'var(--red)':'var(--deep)'}/></div>
+      <div style={{flex:1, fontWeight:800, fontSize:14.5, color: danger?'var(--red)':'var(--ink)'}}>{t}</div>
+      {v && <span className="pv-meta" style={{fontSize:13}}>{v}</span>}
+      {!danger && <Icon name="chevronRight" size={18} color="var(--faint)"/>}
+    </div>
+  );
+}
+
+function ScrPerfilTutor(){
+  return (
+    <div className="pv-screen">
+      <StatusBar/>
+      <div className="pv-content" style={{gap:0}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14}}>
+          <div className="pv-h1" style={{fontSize:27}}>Perfil</div>
+          <Icon name="settings" size={22} color="var(--deep)"/>
+        </div>
+        <div style={{display:'flex', alignItems:'center', gap:14, marginBottom:18}}>
+          <div className="pv-ava" style={{width:66, height:66, background:'var(--soft-2)'}}><Icon name="user" size={32} color="var(--deep)"/></div>
+          <div>
+            <div className="pv-h3" style={{fontSize:19}}>Marina Costa</div>
+            <div className="pv-meta">marina.costa@email.com</div>
+            <div style={{display:'flex', alignItems:'center', gap:5, marginTop:4, color:'var(--muted)', fontSize:12, fontWeight:700}}><Icon name="pin" size={13} color="var(--deep-3)"/> São Paulo, SP</div>
+          </div>
+        </div>
+        <div className="pv-eyebrow" style={{marginBottom:10}}>Meus pets</div>
+        <div style={{display:'flex', gap:12, marginBottom:18}}>
+          {[['Mingau','Gato'],['Theo','Cão']].map(([n,e],i)=>(
+            <div key={i} className="pv-card" style={{flex:1, padding:'13px', display:'flex', alignItems:'center', gap:10}}>
+              <div className="pv-ava" style={{width:42, height:42, background:'var(--soft-2)'}}><Paw size={20} color="var(--deep)"/></div>
+              <div><div style={{fontWeight:800, fontSize:14, color:'var(--ink)'}}>{n}</div><div className="pv-meta" style={{fontSize:11.5}}>{e}</div></div>
+            </div>
+          ))}
+        </div>
+        <div className="pv-eyebrow" style={{marginBottom:2}}>Conta</div>
+        <SettingRow ic="user" t="Dados pessoais"/>
+        <SettingRow ic="bell" t="Notificações" v="Ativas"/>
+        <SettingRow ic="file" t="Documentos e exames"/>
+        <SettingRow ic="settings" t="Privacidade"/>
+        <SettingRow ic="logout" t="Sair" danger/>
+      </div>
+      <BottomNav role="tutor" active="me"/>
+    </div>
+  );
+}
+</script>
+
+<!-- App entry point -->
+<script type="text/babel">
+function App(){
+  return (<>
+    <PVStyle/>
+    <ScrOnboarding/><ScrHome/><ScrCadastroPet/><ScrCarteirinha/>
+    <ScrConsultasList/><ScrConsultaDetalhe/><ScrAgendar/><ScrReceitas/>
+    <ScrRestricoes/><ScrPerfilTutor/>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
