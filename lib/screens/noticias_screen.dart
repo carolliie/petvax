@@ -124,16 +124,25 @@ class _NoticiasScreenState extends State<NoticiasScreen> {
                     const SizedBox(height: 18),
                     // Featured article (first one)
                     if (_filtered.isNotEmpty && _filtered.first.featured) ...[
-                      _FeaturedCard(article: _filtered.first),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '/noticia-detalhe'),
+                        child: _FeaturedCard(article: _filtered.first),
+                      ),
                       const SizedBox(height: 14),
                       if (_filtered.length > 1) ..._filtered.skip(1).map((a) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: _ArticleCard(article: a),
+                        child: GestureDetector(
+                          onTap: () => Navigator.pushNamed(context, '/noticia-detalhe'),
+                          child: _ArticleCard(article: a),
+                        ),
                       )),
                     ] else
                       ..._filtered.map((a) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: _ArticleCard(article: a),
+                        child: GestureDetector(
+                          onTap: () => Navigator.pushNamed(context, '/noticia-detalhe'),
+                          child: _ArticleCard(article: a),
+                        ),
                       )),
                     if (_filtered.isEmpty)
                       _EmptyState(category: _category),

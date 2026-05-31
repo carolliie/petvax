@@ -206,6 +206,23 @@ class _RecipeCardState extends State<_RecipeCard> {
               children: widget.itens.map((m) => PvTag(label: m, variant: TagVariant.soft)).toList(),
             ),
             const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/receita-detalhe'),
+                icon: const Icon(Icons.open_in_new_outlined, size: 16),
+                label: const Text('Ver receita completa'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.deep,
+                  foregroundColor: Colors.white,
+                  textStyle: AppTextStyles.sans(size: 13.5, weight: FontWeight.w800),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             Row(children: [
               Expanded(child: OutlinedButton.icon(
                 onPressed: () {},
